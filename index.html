@@ -11,6 +11,39 @@
             font-family: 'Inter', sans-serif;
             background-color: #111827; /* Tailwind gray-900 */
         }
+        /* Styles for the flip animation */
+        .cell-wrapper {
+            perspective: 1000px;
+        }
+        .feedback-cell {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .feedback-cell.flipped {
+            transform: rotateX(180deg);
+        }
+        .cell-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            color: white;
+            text-align: center;
+        }
+        .cell-front {
+            background-color: #374151; /* gray-700 */
+        }
+        .cell-back {
+            transform: rotateX(180deg);
+        }
         /* Custom styles for autocomplete */
         .autocomplete-items {
             position: absolute;
@@ -29,16 +62,10 @@
             cursor: pointer;
             border-bottom: 1px solid #374151; /* gray-700 */
         }
-        .autocomplete-items div:hover {
-            background-color: #374151; /* gray-700 */
-        }
+        .autocomplete-items div:hover,
         .autocomplete-active {
             background-color: #3B82F6 !important; /* blue-500 */
             color: #ffffff;
-        }
-        .feedback-cell {
-            transition: transform 0.5s, background-color 0.5s;
-            transform-style: preserve-3d;
         }
         .correct { background-color: #10B981; /* Emerald-500 */ }
         .incorrect { background-color: #EF4444; /* Red-500 */ }
@@ -46,7 +73,7 @@
 </head>
 <body class="text-white antialiased">
 
-    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
         <!-- Header -->
         <header class="text-center mb-6">
             <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-blue-400">Meddle</h1>
@@ -61,7 +88,7 @@
             <ul class="list-disc list-inside mt-2 space-y-1">
                 <li><span class="inline-block w-4 h-4 rounded bg-emerald-500 mr-2"></span><span class="font-semibold">Green</span> indicates a correct attribute.</li>
                 <li><span class="inline-block w-4 h-4 rounded bg-red-500 mr-2"></span><span class="font-semibold">Red</span> indicates an incorrect attribute.</li>
-                <li>For 'Year Discovered', <span class="font-bold text-white">▲</span> means the target year is higher, and <span class="font-bold text-white">▼</span> means it's lower.</li>
+                <li>For 'Decade Discovered', <span class="font-bold text-white">▲</span> means the target decade is later, and <span class="font-bold text-white">▼</span> means it's earlier.</li>
             </ul>
         </div>
 
@@ -77,7 +104,7 @@
             
             <!-- Guesses Table -->
             <div class="mt-6 overflow-x-auto">
-                <table class="w-full text-center text-sm md:text-base">
+                <table class="w-full text-center text-sm md:text-base border-separate border-spacing-1">
                     <thead class="border-b-2 border-gray-600">
                         <tr>
                             <th class="p-2 font-semibold">Guess</th>
@@ -85,7 +112,7 @@
                             <th class="p-2 font-semibold">Causation</th>
                             <th class="p-2 font-semibold">Affected System</th>
                             <th class="p-2 font-semibold">Acuity</th>
-                            <th class="p-2 font-semibold">Year Discovered</th>
+                            <th class="p-2 font-semibold">Decade Discovered</th>
                         </tr>
                     </thead>
                     <tbody id="guesses-container">
@@ -100,49 +127,74 @@
             <div class="bg-gray-800 rounded-xl p-8 text-center max-w-sm w-full shadow-lg transform transition-all scale-95 opacity-0" id="modal-content">
                 <h2 id="modal-title" class="text-3xl font-bold mb-4"></h2>
                 <p id="modal-body" class="text-lg text-gray-300 mb-6"></p>
+                <div id="share-grid-container" class="mb-4 font-mono text-lg leading-tight"></div>
+                <button id="share-button" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300 mb-2 hidden">Copy Results</button>
                 <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300">Play Again</button>
             </div>
         </div>
-
     </div>
+    
+    <footer class="text-center text-gray-500 text-sm mt-8 pb-4">
+        <p>A MedShr Production | Inspired by Wordle</p>
+    </footer>
 
     <script>
         const diseases = [
-            { name: "Influenza", specialty: "Infectious Disease", causation: "Viral", system: "Respiratory", acuity: "Acute", year: 1933 },
-            { name: "Hypertension", specialty: "Cardiology", causation: "Multifactorial", system: "Circulatory", acuity: "Chronic", year: 1896 },
-            { name: "Diabetes Mellitus Type 1", specialty: "Endocrinology", causation: "Autoimmune", system: "Endocrine", acuity: "Chronic", year: 1889 },
-            { name: "Asthma", specialty: "Pulmonology", causation: "Inflammatory", system: "Respiratory", acuity: "Chronic", year: 1873 },
-            { name: "Alzheimer's Disease", specialty: "Neurology", causation: "Neurodegenerative", system: "Nervous", acuity: "Chronic", year: 1906 },
-            { name: "Tuberculosis", specialty: "Infectious Disease", causation: "Bacterial", system: "Respiratory", acuity: "Chronic", year: 1882 },
-            { name: "HIV/AIDS", specialty: "Infectious Disease", causation: "Viral", system: "Immune", acuity: "Chronic", year: 1981 },
-            { name: "Malaria", specialty: "Infectious Disease", causation: "Parasitic", system: "Circulatory", acuity: "Acute", year: 1880 },
-            { name: "Parkinson's Disease", specialty: "Neurology", causation: "Neurodegenerative", system: "Nervous", acuity: "Chronic", year: 1817 },
-            { name: "Rheumatoid Arthritis", specialty: "Rheumatology", causation: "Autoimmune", system: "Skeletal", acuity: "Chronic", year: 1800 },
-            { name: "Chickenpox", specialty: "Infectious Disease", causation: "Viral", system: "Integumentary", acuity: "Acute", year: 1553 },
-            { name: "Epilepsy", specialty: "Neurology", causation: "Neurological", system: "Nervous", acuity: "Chronic", year: 1700 }, // Approximation
-            { name: "Cystic Fibrosis", specialty: "Genetics", causation: "Genetic", system: "Respiratory", acuity: "Chronic", year: 1938 },
-            { name: "Multiple Sclerosis", specialty: "Neurology", causation: "Autoimmune", system: "Nervous", acuity: "Chronic", year: 1868 },
-            { name: "Crohn's Disease", specialty: "Gastroenterology", causation: "Inflammatory", system: "Digestive", acuity: "Chronic", year: 1932 },
-            { name: "Gout", specialty: "Rheumatology", causation: "Metabolic", system: "Skeletal", acuity: "Acute", year: 1683 },
-            { name: "Psoriasis", specialty: "Dermatology", causation: "Autoimmune", system: "Integumentary", acuity: "Chronic", year: 1841 },
-            { name: "COVID-19", specialty: "Infectious Disease", causation: "Viral", system: "Respiratory", acuity: "Acute", year: 2019 },
-            { name: "Lupus", specialty: "Rheumatology", causation: "Autoimmune", system: "Multisystem", acuity: "Chronic", year: 1828 },
-            { name: "Endometriosis", specialty: "Gynecology", causation: "Hormonal", system: "Reproductive", acuity: "Chronic", year: 1860 },
-            { name: "Schizophrenia", specialty: "Psychiatry", causation: "Neuropsychiatric", system: "Nervous", acuity: "Chronic", year: 1887 },
-            { name: "Myocardial Infarction", specialty: "Cardiology", causation: "Ischemic", system: "Circulatory", acuity: "Acute", year: 1912 },
-            { name: "Peptic Ulcer Disease", specialty: "Gastroenterology", causation: "Bacterial", system: "Digestive", acuity: "Chronic", year: 1982 },
-            { name: "Sickle Cell Anemia", specialty: "Hematology", causation: "Genetic", system: "Circulatory", acuity: "Chronic", year: 1910 },
-            { name: "Graves' Disease", specialty: "Endocrinology", causation: "Autoimmune", system: "Endocrine", acuity: "Chronic", year: 1835 },
-            { name: "Celiac Disease", specialty: "Gastroenterology", causation: "Autoimmune", system: "Digestive", acuity: "Chronic", year: 1888 },
-            { name: "Poliomyelitis", specialty: "Infectious Disease", causation: "Viral", system: "Nervous", acuity: "Acute", year: 1789 },
-            { name: "Measles", specialty: "Infectious Disease", causation: "Viral", system: "Multisystem", acuity: "Acute", year: 900 },
-            { name: "Huntington's Disease", specialty: "Neurology", causation: "Genetic", system: "Nervous", acuity: "Chronic", year: 1872 }
+            { name: "Influenza", specialty: "Infectious Disease", causation: "Viral", system: "Respiratory", acuity: "Acute", decade: 1930 },
+            { name: "Hypertension", specialty: "Cardiology", causation: "Multifactorial", system: "Circulatory", acuity: "Chronic", decade: 1890 },
+            { name: "Diabetes Mellitus Type 1", specialty: "Endocrinology", causation: "Autoimmune", system: "Endocrine", acuity: "Chronic", decade: 1880 },
+            { name: "Asthma", specialty: "Pulmonology", causation: "Inflammatory", system: "Respiratory", acuity: "Chronic", decade: 1870 },
+            { name: "Alzheimer's Disease", specialty: "Neurology", causation: "Neurodegenerative", system: "Nervous", acuity: "Chronic", decade: 1900 },
+            { name: "Tuberculosis", specialty: "Infectious Disease", causation: "Bacterial", system: "Respiratory", acuity: "Chronic", decade: 1880 },
+            { name: "HIV/AIDS", specialty: "Infectious Disease", causation: "Viral", system: "Immune", acuity: "Chronic", decade: 1980 },
+            { name: "Malaria", specialty: "Infectious Disease", causation: "Parasitic", system: "Circulatory", acuity: "Acute", decade: 1880 },
+            { name: "Parkinson's Disease", specialty: "Neurology", causation: "Neurodegenerative", system: "Nervous", acuity: "Chronic", decade: 1810 },
+            { name: "Rheumatoid Arthritis", specialty: "Rheumatology", causation: "Autoimmune", system: "Skeletal", acuity: "Chronic", decade: 1800 },
+            { name: "Chickenpox", specialty: "Infectious Disease", causation: "Viral", system: "Integumentary", acuity: "Acute", decade: 1550 },
+            { name: "Epilepsy", specialty: "Neurology", causation: "Neurological", system: "Nervous", acuity: "Chronic", decade: 1700 },
+            { name: "Cystic Fibrosis", specialty: "Genetics", causation: "Genetic", system: "Respiratory", acuity: "Chronic", decade: 1930 },
+            { name: "Multiple Sclerosis", specialty: "Neurology", causation: "Autoimmune", system: "Nervous", acuity: "Chronic", decade: 1860 },
+            { name: "Crohn's Disease", specialty: "Gastroenterology", causation: "Inflammatory", system: "Digestive", acuity: "Chronic", decade: 1930 },
+            { name: "Gout", specialty: "Rheumatology", causation: "Metabolic", system: "Skeletal", acuity: "Acute", decade: 1680 },
+            { name: "Psoriasis", specialty: "Dermatology", causation: "Autoimmune", system: "Integumentary", acuity: "Chronic", decade: 1840 },
+            { name: "COVID-19", specialty: "Infectious Disease", causation: "Viral", system: "Respiratory", acuity: "Acute", decade: 2010 },
+            { name: "Lupus", specialty: "Rheumatology", causation: "Autoimmune", system: "Multisystem", acuity: "Chronic", decade: 1820 },
+            { name: "Endometriosis", specialty: "Gynecology", causation: "Hormonal", system: "Reproductive", acuity: "Chronic", decade: 1860 },
+            { name: "Schizophrenia", specialty: "Psychiatry", causation: "Neuropsychiatric", system: "Nervous", acuity: "Chronic", decade: 1880 },
+            { name: "Myocardial Infarction", specialty: "Cardiology", causation: "Ischemic", system: "Circulatory", acuity: "Acute", decade: 1910 },
+            { name: "Peptic Ulcer Disease", specialty: "Gastroenterology", causation: "Bacterial", system: "Digestive", acuity: "Chronic", decade: 1980 },
+            { name: "Sickle Cell Anemia", specialty: "Hematology", causation: "Genetic", system: "Circulatory", acuity: "Chronic", decade: 1910 },
+            { name: "Graves' Disease", specialty: "Endocrinology", causation: "Autoimmune", system: "Endocrine", acuity: "Chronic", decade: 1830 },
+            { name: "Celiac Disease", specialty: "Gastroenterology", causation: "Autoimmune", system: "Digestive", acuity: "Chronic", decade: 1880 },
+            { name: "Poliomyelitis", specialty: "Infectious Disease", causation: "Viral", system: "Nervous", acuity: "Acute", decade: 1780 },
+            { name: "Measles", specialty: "Infectious Disease", causation: "Viral", system: "Multisystem", acuity: "Acute", decade: 900 },
+            { name: "Huntington's Disease", specialty: "Neurology", causation: "Genetic", system: "Nervous", acuity: "Chronic", decade: 1870 },
+            { name: "Dengue Fever", specialty: "Infectious Disease", causation: "Viral", system: "Multisystem", acuity: "Acute", decade: 1770 },
+            { name: "Chronic Kidney Disease", specialty: "Nephrology", causation: "Multifactorial", system: "Urinary", acuity: "Chronic", decade: 1820 },
+            { name: "Osteoporosis", specialty: "Endocrinology", causation: "Metabolic", system: "Skeletal", acuity: "Chronic", decade: 1830 },
+            { name: "Glaucoma", specialty: "Ophthalmology", causation: "Neurological", system: "Nervous", acuity: "Chronic", decade: 1850 },
+            { name: "Stroke", specialty: "Neurology", causation: "Ischemic", system: "Circulatory", acuity: "Acute", decade: 1650 },
+            { name: "Appendicitis", specialty: "General Surgery", causation: "Inflammatory", system: "Digestive", acuity: "Acute", decade: 1880 },
+            { name: "Hepatitis C", specialty: "Infectious Disease", causation: "Viral", system: "Digestive", acuity: "Chronic", decade: 1980 },
+            { name: "Rabies", specialty: "Infectious Disease", causation: "Viral", system: "Nervous", acuity: "Acute", decade: 1880 },
+            { name: "Migraine", specialty: "Neurology", causation: "Neurological", system: "Nervous", acuity: "Chronic", decade: 1860 },
+            { name: "Scurvy", specialty: "Nutrition", causation: "Nutritional", system: "Multisystem", acuity: "Chronic", decade: 1740 },
+            { name: "Acne Vulgaris", specialty: "Dermatology", causation: "Hormonal", system: "Integumentary", acuity: "Chronic", decade: 1800 },
+            { name: "Anorexia Nervosa", specialty: "Psychiatry", causation: "Neuropsychiatric", system: "Multisystem", acuity: "Chronic", decade: 1870 },
+            { name: "Fibromyalgia", specialty: "Rheumatology", causation: "Neurological", system: "Multisystem", acuity: "Chronic", decade: 1900 },
+            { name: "Obesity", specialty: "Endocrinology", causation: "Multifactorial", system: "Multisystem", acuity: "Chronic", decade: 1950 },
+            { name: "Eczema", specialty: "Dermatology", causation: "Inflammatory", system: "Integumentary", acuity: "Chronic", decade: 1800 },
+            { name: "Down Syndrome", specialty: "Genetics", causation: "Genetic", system: "Multisystem", acuity: "Chronic", decade: 1860 },
+            { name: "Concussion", specialty: "Neurology", causation: "Traumatic", system: "Nervous", acuity: "Acute", decade: 1700 },
+            { name: "Depression", specialty: "Psychiatry", causation: "Neuropsychiatric", system: "Nervous", acuity: "Chronic", decade: 1800 },
+            { name: "Typhoid Fever", specialty: "Infectious Disease", causation: "Bacterial", system: "Digestive", acuity: "Acute", decade: 1880 },
+            { name: "Meningitis", specialty: "Infectious Disease", causation: "Bacterial", system: "Nervous", acuity: "Acute", decade: 1800 },
+            { name: "Irritable Bowel Syndrome", specialty: "Gastroenterology", causation: "Neurological", system: "Digestive", acuity: "Chronic", decade: 1820 }
         ];
 
         const MAX_GUESSES = 8;
-        let targetDisease;
-        let guessesLeft;
-        let gameOver;
+        let targetDisease, guessesLeft, gameOver;
+        let guessHistory = [];
 
         // DOM Elements
         const guessInput = document.getElementById('guess-input');
@@ -154,14 +206,18 @@
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
         const playAgainButton = document.getElementById('play-again-button');
+        const shareButton = document.getElementById('share-button');
+        const shareGridContainer = document.getElementById('share-grid-container');
         const autocompleteList = document.getElementById('autocomplete-list');
+        
+        let activeAutocompleteIndex = -1;
 
         function initializeGame() {
             targetDisease = diseases[Math.floor(Math.random() * diseases.length)];
             guessesLeft = MAX_GUESSES;
             gameOver = false;
+            guessHistory = [];
             
-            // Console log for debugging/learning
             console.log("Answer:", targetDisease.name);
 
             guessesContainer.innerHTML = '';
@@ -179,47 +235,72 @@
             const guessedDisease = diseases.find(d => d.name.toLowerCase() === guessName.toLowerCase());
 
             if (!guessedDisease) {
-                // We'll use a custom modal instead of alert
                 showModal("Invalid Guess", "That disease is not in our list. Please choose one from the autocomplete suggestions.", true);
                 return;
             }
 
             guessesLeft--;
             guessesLeftSpan.textContent = guessesLeft;
-
-            const newRow = document.createElement('tr');
-            newRow.classList.add('bg-gray-700');
-
-            const createCell = (text, isCorrect, yearComparison = null) => {
-                const cell = document.createElement('td');
-                cell.className = `p-3 m-1 rounded-md text-white font-medium ${isCorrect ? 'correct' : 'incorrect'}`;
-                let content = text;
-                if (yearComparison) {
-                    content += ` <span class="font-bold">${yearComparison > 0 ? '▲' : '▼'}</span>`;
-                }
-                cell.innerHTML = content;
-                return cell;
-            };
-
-            newRow.appendChild(createCell(guessedDisease.name, guessedDisease.name === targetDisease.name));
-            newRow.appendChild(createCell(guessedDisease.specialty, guessedDisease.specialty === targetDisease.specialty));
-            newRow.appendChild(createCell(guessedDisease.causation, guessedDisease.causation === targetDisease.causation));
-            newRow.appendChild(createCell(guessedDisease.system, guessedDisease.system === targetDisease.system));
-            newRow.appendChild(createCell(guessedDisease.acuity, guessedDisease.acuity === targetDisease.acuity));
-
-            const yearCorrect = guessedDisease.year === targetDisease.year;
-            const yearComparison = yearCorrect ? null : targetDisease.year - guessedDisease.year;
-            newRow.appendChild(createCell(guessedDisease.year, yearCorrect, yearComparison));
             
-            guessesContainer.appendChild(newRow);
+            const results = {
+                name: guessedDisease.name === targetDisease.name,
+                specialty: guessedDisease.specialty === targetDisease.specialty,
+                causation: guessedDisease.causation === targetDisease.causation,
+                system: guessedDisease.system === targetDisease.system,
+                acuity: guessedDisease.acuity === targetDisease.acuity,
+                decade: guessedDisease.decade === targetDisease.decade,
+                decadeComparison: targetDisease.decade - guessedDisease.decade
+            };
+            guessHistory.push(results);
+            
+            displayGuessRow(guessedDisease, results);
+            
             guessInput.value = '';
             closeAutocomplete();
 
-            if (guessedDisease.name === targetDisease.name) {
-                endGame(true);
+            if (results.name) {
+                setTimeout(() => endGame(true), 6 * 150);
             } else if (guessesLeft === 0) {
-                endGame(false);
+                 setTimeout(() => endGame(false), 6 * 150);
             }
+        }
+
+        function displayGuessRow(guessedDisease, results) {
+            const newRow = document.createElement('tr');
+            const properties = ['name', 'specialty', 'causation', 'system', 'acuity', 'decade'];
+
+            properties.forEach((prop, index) => {
+                const td = document.createElement('td');
+                td.className = 'cell-wrapper';
+
+                const cellFlipper = document.createElement('div');
+                cellFlipper.className = 'feedback-cell relative h-16 md:h-14';
+
+                let contentOnBack = (prop === 'decade') ? `${guessedDisease[prop]}s` : guessedDisease[prop];
+                if (prop === 'decade' && !results.decade) {
+                    contentOnBack += ` <span class="font-bold text-lg ml-1">${results.decadeComparison > 0 ? '▲' : '▼'}</span>`;
+                }
+
+                const frontFace = document.createElement('div');
+                frontFace.className = 'cell-face cell-front';
+                frontFace.innerHTML = (prop === 'decade') ? `${guessedDisease[prop]}s` : guessedDisease[prop];
+
+                const backFace = document.createElement('div');
+                backFace.className = 'cell-face cell-back';
+                backFace.classList.add(results[prop] ? 'correct' : 'incorrect');
+                backFace.innerHTML = contentOnBack;
+
+                cellFlipper.appendChild(frontFace);
+                cellFlipper.appendChild(backFace);
+                
+                td.appendChild(cellFlipper);
+                newRow.appendChild(td);
+                
+                setTimeout(() => {
+                    cellFlipper.classList.add('flipped');
+                }, index * 150);
+            });
+            guessesContainer.appendChild(newRow);
         }
 
         function endGame(isWin) {
@@ -227,57 +308,84 @@
             guessInput.disabled = true;
             guessButton.disabled = true;
 
+            displayShareableResult();
+
             if (isWin) {
                 showModal("You got it!", `The disease was <strong class="text-blue-400">${targetDisease.name}</strong>.`);
             } else {
                 showModal("Game Over!", `The correct disease was <strong class="text-blue-400">${targetDisease.name}</strong>.`);
             }
         }
+        
+        function displayShareableResult() {
+            shareGridContainer.innerHTML = '';
+            guessHistory.forEach(guess => {
+                const row = document.createElement('div');
+                const properties = ['name', 'specialty', 'causation', 'system', 'acuity', 'decade'];
+                let rowString = '';
+                properties.forEach(prop => {
+                    if (prop === 'decade') {
+                        if (guess.decade) rowString += '🟩';
+                        else if (guess.decadeComparison > 0) rowString += '🔼';
+                        else rowString += '🔽';
+                    } else {
+                        rowString += guess[prop] ? '🟩' : '🟥';
+                    }
+                });
+                row.textContent = rowString;
+                shareGridContainer.appendChild(row);
+            });
+            shareButton.classList.remove('hidden');
+        }
 
         function showModal(title, body, isWarning = false) {
             modalTitle.textContent = title;
             modalBody.innerHTML = body;
             
-            // Change button text for warnings
-            if(isWarning) {
-                playAgainButton.textContent = "Close";
-            } else {
-                playAgainButton.textContent = "Play Again";
-            }
+            playAgainButton.textContent = isWarning ? "Close" : "Play Again";
+            shareButton.style.display = isWarning ? 'none' : 'block';
 
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-            }, 10);
-            
-            // Temporarily replace play again listener with a simple close listener
-             const newPlayAgainButton = playAgainButton.cloneNode(true);
-             playAgainButton.parentNode.replaceChild(newPlayAgainButton, playAgainButton);
-             if(isWarning) {
+            const newPlayAgainButton = playAgainButton.cloneNode(true);
+            playAgainButton.parentNode.replaceChild(newPlayAgainButton, playAgainButton);
+
+            if (isWarning) {
                 newPlayAgainButton.addEventListener('click', hideModal, { once: true });
-             } else {
+            } else {
                 newPlayAgainButton.addEventListener('click', initializeGame);
-             }
+            }
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => modalContent.classList.remove('scale-95', 'opacity-0'), 10);
         }
 
         function hideModal() {
             modalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                 modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => modal.classList.add('hidden'), 300);
         }
         
-        // --- Autocomplete Logic ---
+        function copyResultsToClipboard() {
+            const guessCount = guessHistory.length;
+            const didWin = guessHistory[guessHistory.length - 1].name;
+            let shareText = `Meddle (${didWin ? guessCount : 'X'}/${MAX_GUESSES})\n\n`;
+            shareText += Array.from(shareGridContainer.children).map(row => row.textContent).join('\n');
+            
+            navigator.clipboard.writeText(shareText).then(() => {
+                const originalText = shareButton.textContent;
+                shareButton.textContent = 'Copied!';
+                setTimeout(() => { shareButton.textContent = originalText; }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
         function handleAutocomplete(e) {
             const value = e.target.value;
             closeAutocomplete();
-            if (!value) return false;
+            if (!value) return;
 
-            const filteredDiseases = diseases.filter(d => 
-                d.name.toLowerCase().startsWith(value.toLowerCase())
-            );
-
-            filteredDiseases.forEach(disease => {
+            const filteredDiseases = diseases.filter(d => d.name.toLowerCase().startsWith(value.toLowerCase()));
+            
+            filteredDiseases.forEach((disease, i) => {
                 const item = document.createElement('div');
                 item.innerHTML = `<strong>${disease.name.substr(0, value.length)}</strong>${disease.name.substr(value.length)}`;
                 item.addEventListener('click', () => {
@@ -290,21 +398,48 @@
         
         function closeAutocomplete() {
             autocompleteList.innerHTML = '';
+            activeAutocompleteIndex = -1;
+        }
+
+        function updateActiveAutocomplete() {
+            const items = autocompleteList.getElementsByTagName('div');
+            for (let i = 0; i < items.length; i++) {
+                items[i].classList.remove('autocomplete-active');
+            }
+            if (activeAutocompleteIndex > -1) {
+                items[activeAutocompleteIndex].classList.add('autocomplete-active');
+            }
         }
 
         // Event Listeners
         guessButton.addEventListener('click', handleGuess);
-        guessInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                handleGuess();
-            }
-        });
-        document.getElementById('play-again-button').addEventListener('click', initializeGame);
+        shareButton.addEventListener('click', copyResultsToClipboard);
+        
         guessInput.addEventListener('input', handleAutocomplete);
-        document.addEventListener('click', (e) => {
-            if (e.target !== guessInput) {
+        guessInput.addEventListener('keydown', (e) => {
+            const items = autocompleteList.getElementsByTagName('div');
+            if (e.key === 'ArrowDown') {
+                activeAutocompleteIndex++;
+                if (activeAutocompleteIndex >= items.length) activeAutocompleteIndex = 0;
+                updateActiveAutocomplete();
+            } else if (e.key === 'ArrowUp') {
+                activeAutocompleteIndex--;
+                if (activeAutocompleteIndex < 0) activeAutocompleteIndex = items.length - 1;
+                updateActiveAutocomplete();
+            } else if (e.key === 'Enter') {
+                e.preventDefault(); 
+                if (activeAutocompleteIndex > -1) {
+                    items[activeAutocompleteIndex].click();
+                } else {
+                    handleGuess();
+                }
+            } else if (e.key === 'Escape') {
                 closeAutocomplete();
             }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target !== guessInput) closeAutocomplete();
         });
 
         // Initial game start
