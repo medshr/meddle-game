@@ -350,7 +350,7 @@
             if (isWarning) {
                 newPlayAgainButton.addEventListener('click', hideModal, { once: true });
             } else {
-                newPlayAgainButton.addEventListener('click', initializeGame);
+                newPlayAgainButton.addEventListener('click', initializeGame, { once: true });
             }
             
             modal.classList.remove('hidden');
