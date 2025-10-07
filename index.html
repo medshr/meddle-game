@@ -83,8 +83,7 @@
         <!-- Game Instructions -->
         <div class="bg-gray-800 p-4 rounded-lg mb-6 text-sm text-gray-300">
             <h2 class="font-semibold text-lg mb-2 text-white">How to Play</h2>
-            <p>Type the name of a disease and press Guess. You have 8 attempts to find the correct one.</p>
-            <p class="mt-2">After each guess, you'll see feedback:</p>
+            <p>Guess the disease in 8 tries. After each guess, you'll see feedback on the attributes.</p>
             <ul class="list-disc list-inside mt-2 space-y-1">
                 <li><span class="inline-block w-4 h-4 rounded bg-emerald-500 mr-2"></span><span class="font-semibold">Green</span> indicates a correct attribute.</li>
                 <li><span class="inline-block w-4 h-4 rounded bg-red-500 mr-2"></span><span class="font-semibold">Red</span> indicates an incorrect attribute.</li>
@@ -106,11 +105,11 @@
             <div class="mt-6 overflow-x-auto">
                 <table class="w-full text-center text-sm md:text-base border-separate border-spacing-1">
                     <thead class="border-b-2 border-gray-600">
-                        <tr>
+                         <tr>
                             <th class="p-2 font-semibold">Guess</th>
                             <th class="p-2 font-semibold">Specialty</th>
                             <th class="p-2 font-semibold">Causation</th>
-                            <th class="p-2 font-semibold">Affected System</th>
+                            <th class="p-2 font-semibold">System</th>
                             <th class="p-2 font-semibold">Acuity</th>
                             <th class="p-2 font-semibold">Decade Discovered</th>
                         </tr>
@@ -141,55 +140,50 @@
     <script>
         const diseases = [
             { name: "Influenza", specialty: "Infectious Disease", causation: "Viral", system: "Respiratory", acuity: "Acute", decade: 1930 },
-            { name: "Hypertension", specialty: "Cardiology", causation: "Multifactorial", system: "Circulatory", acuity: "Chronic", decade: 1890 },
+            { name: "Hypertension", specialty: "Cardiology", causation: "Idiopathic", system: "Circulatory", acuity: "Chronic", decade: 1890 },
             { name: "Diabetes Mellitus Type 1", specialty: "Endocrinology", causation: "Autoimmune", system: "Endocrine", acuity: "Chronic", decade: 1880 },
             { name: "Asthma", specialty: "Pulmonology", causation: "Inflammatory", system: "Respiratory", acuity: "Chronic", decade: 1870 },
-            { name: "Alzheimer's Disease", specialty: "Neurology", causation: "Neurodegenerative", system: "Nervous", acuity: "Chronic", decade: 1900 },
+            { name: "Alzheimer's Disease", specialty: "Neurology", causation: "Degenerative", system: "Nervous", acuity: "Chronic", decade: 1900 },
             { name: "Tuberculosis", specialty: "Infectious Disease", causation: "Bacterial", system: "Respiratory", acuity: "Chronic", decade: 1880 },
             { name: "HIV/AIDS", specialty: "Infectious Disease", causation: "Viral", system: "Immune", acuity: "Chronic", decade: 1980 },
             { name: "Malaria", specialty: "Infectious Disease", causation: "Parasitic", system: "Circulatory", acuity: "Acute", decade: 1880 },
-            { name: "Parkinson's Disease", specialty: "Neurology", causation: "Neurodegenerative", system: "Nervous", acuity: "Chronic", decade: 1810 },
+            { name: "Parkinson's Disease", specialty: "Neurology", causation: "Degenerative", system: "Nervous", acuity: "Chronic", decade: 1810 },
             { name: "Rheumatoid Arthritis", specialty: "Rheumatology", causation: "Autoimmune", system: "Skeletal", acuity: "Chronic", decade: 1800 },
             { name: "Chickenpox", specialty: "Infectious Disease", causation: "Viral", system: "Integumentary", acuity: "Acute", decade: 1550 },
             { name: "Epilepsy", specialty: "Neurology", causation: "Neurological", system: "Nervous", acuity: "Chronic", decade: 1700 },
-            { name: "Cystic Fibrosis", specialty: "Genetics", causation: "Genetic", system: "Respiratory", acuity: "Chronic", decade: 1930 },
+            { name: "Cystic Fibrosis", specialty: "Pulmonology", causation: "Genetic", system: "Respiratory", acuity: "Chronic", decade: 1930 },
             { name: "Multiple Sclerosis", specialty: "Neurology", causation: "Autoimmune", system: "Nervous", acuity: "Chronic", decade: 1860 },
-            { name: "Crohn's Disease", specialty: "Gastroenterology", causation: "Inflammatory", system: "Digestive", acuity: "Chronic", decade: 1930 },
+            { name: "Crohn's Disease", specialty: "Gastroenterology", causation: "Autoimmune", system: "Digestive", acuity: "Chronic", decade: 1930 },
             { name: "Gout", specialty: "Rheumatology", causation: "Metabolic", system: "Skeletal", acuity: "Acute", decade: 1680 },
             { name: "Psoriasis", specialty: "Dermatology", causation: "Autoimmune", system: "Integumentary", acuity: "Chronic", decade: 1840 },
             { name: "COVID-19", specialty: "Infectious Disease", causation: "Viral", system: "Respiratory", acuity: "Acute", decade: 2010 },
-            { name: "Lupus", specialty: "Rheumatology", causation: "Autoimmune", system: "Multisystem", acuity: "Chronic", decade: 1820 },
+            { name: "Lupus", specialty: "Rheumatology", causation: "Autoimmune", system: "Immune", acuity: "Chronic", decade: 1820 },
             { name: "Endometriosis", specialty: "Gynecology", causation: "Hormonal", system: "Reproductive", acuity: "Chronic", decade: 1860 },
-            { name: "Schizophrenia", specialty: "Psychiatry", causation: "Neuropsychiatric", system: "Nervous", acuity: "Chronic", decade: 1880 },
             { name: "Myocardial Infarction", specialty: "Cardiology", causation: "Ischemic", system: "Circulatory", acuity: "Acute", decade: 1910 },
             { name: "Peptic Ulcer Disease", specialty: "Gastroenterology", causation: "Bacterial", system: "Digestive", acuity: "Chronic", decade: 1980 },
             { name: "Sickle Cell Anemia", specialty: "Hematology", causation: "Genetic", system: "Circulatory", acuity: "Chronic", decade: 1910 },
             { name: "Graves' Disease", specialty: "Endocrinology", causation: "Autoimmune", system: "Endocrine", acuity: "Chronic", decade: 1830 },
             { name: "Celiac Disease", specialty: "Gastroenterology", causation: "Autoimmune", system: "Digestive", acuity: "Chronic", decade: 1880 },
             { name: "Poliomyelitis", specialty: "Infectious Disease", causation: "Viral", system: "Nervous", acuity: "Acute", decade: 1780 },
-            { name: "Measles", specialty: "Infectious Disease", causation: "Viral", system: "Multisystem", acuity: "Acute", decade: 900 },
+            { name: "Measles", specialty: "Infectious Disease", causation: "Viral", system: "Immune", acuity: "Acute", decade: 900 },
             { name: "Huntington's Disease", specialty: "Neurology", causation: "Genetic", system: "Nervous", acuity: "Chronic", decade: 1870 },
-            { name: "Dengue Fever", specialty: "Infectious Disease", causation: "Viral", system: "Multisystem", acuity: "Acute", decade: 1770 },
-            { name: "Chronic Kidney Disease", specialty: "Nephrology", causation: "Multifactorial", system: "Urinary", acuity: "Chronic", decade: 1820 },
+            { name: "Dengue Fever", specialty: "Infectious Disease", causation: "Viral", system: "Circulatory", acuity: "Acute", decade: 1770 },
+            { name: "Chronic Kidney Disease", specialty: "Nephrology", causation: "Degenerative", system: "Urinary", acuity: "Chronic", decade: 1820 },
             { name: "Osteoporosis", specialty: "Endocrinology", causation: "Metabolic", system: "Skeletal", acuity: "Chronic", decade: 1830 },
-            { name: "Glaucoma", specialty: "Ophthalmology", causation: "Neurological", system: "Nervous", acuity: "Chronic", decade: 1850 },
-            { name: "Stroke", specialty: "Neurology", causation: "Ischemic", system: "Circulatory", acuity: "Acute", decade: 1650 },
+            { name: "Glaucoma", specialty: "Ophthalmology", causation: "Degenerative", system: "Nervous", acuity: "Chronic", decade: 1850 },
+            { name: "Stroke", specialty: "Neurology", causation: "Ischemic", system: "Nervous", acuity: "Acute", decade: 1650 },
             { name: "Appendicitis", specialty: "General Surgery", causation: "Inflammatory", system: "Digestive", acuity: "Acute", decade: 1880 },
             { name: "Hepatitis C", specialty: "Infectious Disease", causation: "Viral", system: "Digestive", acuity: "Chronic", decade: 1980 },
             { name: "Rabies", specialty: "Infectious Disease", causation: "Viral", system: "Nervous", acuity: "Acute", decade: 1880 },
-            { name: "Migraine", specialty: "Neurology", causation: "Neurological", system: "Nervous", acuity: "Chronic", decade: 1860 },
-            { name: "Scurvy", specialty: "Nutrition", causation: "Nutritional", system: "Multisystem", acuity: "Chronic", decade: 1740 },
+            { name: "Migraine", specialty: "Neurology", causation: "Neurological", system: "Nervous", acuity: "Acute", decade: 1860 },
+            { name: "Scurvy", specialty: "Internal Medicine", causation: "Nutritional", system: "Integumentary", acuity: "Acute", decade: 1740 },
             { name: "Acne Vulgaris", specialty: "Dermatology", causation: "Hormonal", system: "Integumentary", acuity: "Chronic", decade: 1800 },
-            { name: "Anorexia Nervosa", specialty: "Psychiatry", causation: "Neuropsychiatric", system: "Multisystem", acuity: "Chronic", decade: 1870 },
-            { name: "Fibromyalgia", specialty: "Rheumatology", causation: "Neurological", system: "Multisystem", acuity: "Chronic", decade: 1900 },
-            { name: "Obesity", specialty: "Endocrinology", causation: "Multifactorial", system: "Multisystem", acuity: "Chronic", decade: 1950 },
+            { name: "Fibromyalgia", specialty: "Rheumatology", causation: "Idiopathic", system: "Skeletal", acuity: "Chronic", decade: 1900 },
             { name: "Eczema", specialty: "Dermatology", causation: "Inflammatory", system: "Integumentary", acuity: "Chronic", decade: 1800 },
-            { name: "Down Syndrome", specialty: "Genetics", causation: "Genetic", system: "Multisystem", acuity: "Chronic", decade: 1860 },
-            { name: "Concussion", specialty: "Neurology", causation: "Traumatic", system: "Nervous", acuity: "Acute", decade: 1700 },
-            { name: "Depression", specialty: "Psychiatry", causation: "Neuropsychiatric", system: "Nervous", acuity: "Chronic", decade: 1800 },
+            { name: "Down Syndrome", specialty: "Pediatrics", causation: "Genetic", system: "Nervous", acuity: "Chronic", decade: 1860 },
+            { name: "Depression", specialty: "Psychiatry", causation: "Neurological", system: "Nervous", acuity: "Chronic", decade: 1800 },
             { name: "Typhoid Fever", specialty: "Infectious Disease", causation: "Bacterial", system: "Digestive", acuity: "Acute", decade: 1880 },
-            { name: "Meningitis", specialty: "Infectious Disease", causation: "Bacterial", system: "Nervous", acuity: "Acute", decade: 1800 },
-            { name: "Irritable Bowel Syndrome", specialty: "Gastroenterology", causation: "Neurological", system: "Digestive", acuity: "Chronic", decade: 1820 }
+            { name: "Meningitis", specialty: "Infectious Disease", causation: "Bacterial", system: "Nervous", acuity: "Acute", decade: 1800 }
         ];
 
         const MAX_GUESSES = 8;
@@ -276,9 +270,12 @@
                 const cellFlipper = document.createElement('div');
                 cellFlipper.className = 'feedback-cell relative h-16 md:h-14';
 
-                let contentOnBack = (prop === 'decade') ? `${guessedDisease[prop]}s` : guessedDisease[prop];
-                if (prop === 'decade' && !results.decade) {
-                    contentOnBack += ` <span class="font-bold text-lg ml-1">${results.decadeComparison > 0 ? '▲' : '▼'}</span>`;
+                let contentOnBack = guessedDisease[prop];
+                 if (prop === 'decade') {
+                    contentOnBack = `${guessedDisease[prop]}s`; // Add 's' to decade
+                    if (!results.decade) {
+                        contentOnBack += ` <span class="font-bold text-lg ml-1">${results.decadeComparison > 0 ? '▲' : '▼'}</span>`;
+                    }
                 }
 
                 const frontFace = document.createElement('div');
