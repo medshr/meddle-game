@@ -199,7 +199,6 @@
         const modalContent = document.getElementById('modal-content');
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
-        const playAgainButton = document.getElementById('play-again-button');
         const shareButton = document.getElementById('share-button');
         const shareGridContainer = document.getElementById('share-grid-container');
         const autocompleteList = document.getElementById('autocomplete-list');
@@ -338,10 +337,13 @@
         function showModal(title, body, isWarning = false) {
             modalTitle.textContent = title;
             modalBody.innerHTML = body;
+
+            const playAgainButton = document.getElementById('play-again-button');
             
             playAgainButton.textContent = isWarning ? "Close" : "Play Again";
             shareButton.style.display = isWarning ? 'none' : 'block';
 
+            // Clone the button to remove old event listeners, then replace it in the DOM
             const newPlayAgainButton = playAgainButton.cloneNode(true);
             playAgainButton.parentNode.replaceChild(newPlayAgainButton, playAgainButton);
 
