@@ -33,7 +33,7 @@
             background-color: #374151; /* gray-700 */
         }
         .autocomplete-active {
-            background-color: #4F46E5 !important; /* indigo-600 */
+            background-color: #3B82F6 !important; /* blue-500 */
             color: #ffffff;
         }
         .feedback-cell {
@@ -49,8 +49,8 @@
     <div class="container mx-auto p-4 md:p-8 max-w-4xl">
         <!-- Header -->
         <header class="text-center mb-6">
-            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-emerald-400">Meddle</h1>
-            <p class="text-lg text-gray-400 mt-2">Guess the medical disease!</p>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-blue-400">Meddle</h1>
+            <p class="text-lg text-gray-400 mt-2">The MedShr Disease Guessing Game</p>
         </header>
         
         <!-- Game Instructions -->
@@ -69,10 +69,10 @@
         <main id="game-board" class="bg-gray-800 p-6 rounded-xl shadow-2xl">
             <!-- Input Form -->
             <div class="relative mb-4">
-                <input type="text" id="guess-input" placeholder="Type a disease name..." class="w-full bg-gray-700 border-2 border-gray-600 rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition">
+                <input type="text" id="guess-input" placeholder="Type a disease name..." class="w-full bg-gray-700 border-2 border-gray-600 rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
                 <div id="autocomplete-list" class="autocomplete-items rounded-b-lg"></div>
             </div>
-            <button id="guess-button" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105">Guess</button>
+            <button id="guess-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105">Guess</button>
             <p class="text-center text-gray-400 mt-2 text-sm">Guesses remaining: <span id="guesses-left">8</span></p>
             
             <!-- Guesses Table -->
@@ -100,7 +100,7 @@
             <div class="bg-gray-800 rounded-xl p-8 text-center max-w-sm w-full shadow-lg transform transition-all scale-95 opacity-0" id="modal-content">
                 <h2 id="modal-title" class="text-3xl font-bold mb-4"></h2>
                 <p id="modal-body" class="text-lg text-gray-300 mb-6"></p>
-                <button id="play-again-button" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300">Play Again</button>
+                <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300">Play Again</button>
             </div>
         </div>
 
@@ -122,7 +122,21 @@
             { name: "Epilepsy", specialty: "Neurology", causation: "Neurological", system: "Nervous", acuity: "Chronic", year: 1700 }, // Approximation
             { name: "Cystic Fibrosis", specialty: "Genetics", causation: "Genetic", system: "Respiratory", acuity: "Chronic", year: 1938 },
             { name: "Multiple Sclerosis", specialty: "Neurology", causation: "Autoimmune", system: "Nervous", acuity: "Chronic", year: 1868 },
-            { name: "Crohn's Disease", specialty: "Gastroenterology", causation: "Inflammatory", system: "Digestive", acuity: "Chronic", year: 1932 }
+            { name: "Crohn's Disease", specialty: "Gastroenterology", causation: "Inflammatory", system: "Digestive", acuity: "Chronic", year: 1932 },
+            { name: "Gout", specialty: "Rheumatology", causation: "Metabolic", system: "Skeletal", acuity: "Acute", year: 1683 },
+            { name: "Psoriasis", specialty: "Dermatology", causation: "Autoimmune", system: "Integumentary", acuity: "Chronic", year: 1841 },
+            { name: "COVID-19", specialty: "Infectious Disease", causation: "Viral", system: "Respiratory", acuity: "Acute", year: 2019 },
+            { name: "Lupus", specialty: "Rheumatology", causation: "Autoimmune", system: "Multisystem", acuity: "Chronic", year: 1828 },
+            { name: "Endometriosis", specialty: "Gynecology", causation: "Hormonal", system: "Reproductive", acuity: "Chronic", year: 1860 },
+            { name: "Schizophrenia", specialty: "Psychiatry", causation: "Neuropsychiatric", system: "Nervous", acuity: "Chronic", year: 1887 },
+            { name: "Myocardial Infarction", specialty: "Cardiology", causation: "Ischemic", system: "Circulatory", acuity: "Acute", year: 1912 },
+            { name: "Peptic Ulcer Disease", specialty: "Gastroenterology", causation: "Bacterial", system: "Digestive", acuity: "Chronic", year: 1982 },
+            { name: "Sickle Cell Anemia", specialty: "Hematology", causation: "Genetic", system: "Circulatory", acuity: "Chronic", year: 1910 },
+            { name: "Graves' Disease", specialty: "Endocrinology", causation: "Autoimmune", system: "Endocrine", acuity: "Chronic", year: 1835 },
+            { name: "Celiac Disease", specialty: "Gastroenterology", causation: "Autoimmune", system: "Digestive", acuity: "Chronic", year: 1888 },
+            { name: "Poliomyelitis", specialty: "Infectious Disease", causation: "Viral", system: "Nervous", acuity: "Acute", year: 1789 },
+            { name: "Measles", specialty: "Infectious Disease", causation: "Viral", system: "Multisystem", acuity: "Acute", year: 900 },
+            { name: "Huntington's Disease", specialty: "Neurology", causation: "Genetic", system: "Nervous", acuity: "Chronic", year: 1872 }
         ];
 
         const MAX_GUESSES = 8;
@@ -165,7 +179,8 @@
             const guessedDisease = diseases.find(d => d.name.toLowerCase() === guessName.toLowerCase());
 
             if (!guessedDisease) {
-                alert("Invalid disease name. Please select from the list.");
+                // We'll use a custom modal instead of alert
+                showModal("Invalid Guess", "That disease is not in our list. Please choose one from the autocomplete suggestions.", true);
                 return;
             }
 
@@ -213,19 +228,36 @@
             guessButton.disabled = true;
 
             if (isWin) {
-                showModal("You got it!", `The disease was <strong class="text-emerald-400">${targetDisease.name}</strong>.`);
+                showModal("You got it!", `The disease was <strong class="text-blue-400">${targetDisease.name}</strong>.`);
             } else {
-                showModal("Game Over!", `The correct disease was <strong class="text-emerald-400">${targetDisease.name}</strong>.`);
+                showModal("Game Over!", `The correct disease was <strong class="text-blue-400">${targetDisease.name}</strong>.`);
             }
         }
 
-        function showModal(title, body) {
+        function showModal(title, body, isWarning = false) {
             modalTitle.textContent = title;
             modalBody.innerHTML = body;
+            
+            // Change button text for warnings
+            if(isWarning) {
+                playAgainButton.textContent = "Close";
+            } else {
+                playAgainButton.textContent = "Play Again";
+            }
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modalContent.classList.remove('scale-95', 'opacity-0');
             }, 10);
+            
+            // Temporarily replace play again listener with a simple close listener
+             const newPlayAgainButton = playAgainButton.cloneNode(true);
+             playAgainButton.parentNode.replaceChild(newPlayAgainButton, playAgainButton);
+             if(isWarning) {
+                newPlayAgainButton.addEventListener('click', hideModal, { once: true });
+             } else {
+                newPlayAgainButton.addEventListener('click', initializeGame);
+             }
         }
 
         function hideModal() {
@@ -267,7 +299,7 @@
                 handleGuess();
             }
         });
-        playAgainButton.addEventListener('click', initializeGame);
+        document.getElementById('play-again-button').addEventListener('click', initializeGame);
         guessInput.addEventListener('input', handleAutocomplete);
         document.addEventListener('click', (e) => {
             if (e.target !== guessInput) {
