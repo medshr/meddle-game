@@ -114,20 +114,27 @@
                             <th class="p-2 font-semibold">Decade Discovered</th>
                         </tr>
                     </thead>
-                    <tbody id="guesses-container">
-                        <!-- Guesses will be dynamically inserted here -->
-                    </tbody>
+                    <tbody id="guesses-container"></tbody>
                 </table>
             </div>
         </main>
         
         <!-- Win/Loss Modal -->
         <div id="modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
-            <div class="bg-gray-800 rounded-xl p-8 text-center max-w-sm w-full shadow-lg transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="bg-gray-800 rounded-xl p-8 text-center max-w-md w-full shadow-lg transform transition-all scale-95 opacity-0" id="modal-content">
                 <h2 id="modal-title" class="text-3xl font-bold mb-4"></h2>
                 <p id="modal-body" class="text-lg text-gray-300 mb-6"></p>
+
+                <!-- Stats Display -->
+                <div id="stats-display" class="grid grid-cols-4 gap-4 text-center my-6">
+                    <div><p id="stat-played" class="text-3xl font-bold">0</p><p class="text-xs text-gray-400">Played</p></div>
+                    <div><p id="stat-win-percent" class="text-3xl font-bold">0</p><p class="text-xs text-gray-400">Win %</p></div>
+                    <div><p id="stat-current-streak" class="text-3xl font-bold">0</p><p class="text-xs text-gray-400">Current Streak</p></div>
+                    <div><p id="stat-max-streak" class="text-3xl font-bold">0</p><p class="text-xs text-gray-400">Max Streak</p></div>
+                </div>
+
                 <div id="share-grid-container" class="mb-4 font-mono text-lg leading-tight"></div>
-                <button id="share-button" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300 mb-2 hidden">Copy Results</button>
+                <button id="share-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300 mb-2 hidden">Copy Results</button>
                 <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300">Play Again</button>
             </div>
         </div>
@@ -135,6 +142,7 @@
     
     <footer class="text-center text-gray-500 text-sm mt-8 pb-4">
         <p>A MedShr Production | Inspired by Wordle</p>
+        <p class="mt-1">Version 1.1.0</p>
     </footer>
 
     <script>
@@ -187,7 +195,7 @@
         ];
 
         const MAX_GUESSES = 8;
-        let targetDisease, guessesLeft, gameOver;
+        let targetDisease, guessesLeft, gameOver, stats;
         let guessHistory = [];
 
         // DOM Elements
@@ -202,10 +210,24 @@
         const shareButton = document.getElementById('share-button');
         const shareGridContainer = document.getElementById('share-grid-container');
         const autocompleteList = document.getElementById('autocomplete-list');
+        const statPlayed = document.getElementById('stat-played');
+        const statWinPercent = document.getElementById('stat-win-percent');
+        const statCurrentStreak = document.getElementById('stat-current-streak');
+        const statMaxStreak = document.getElementById('stat-max-streak');
         
         let activeAutocompleteIndex = -1;
 
+        function loadStats() {
+            const statsJson = localStorage.getItem('meddleGameStats');
+            stats = statsJson ? JSON.parse(statsJson) : { played: 0, wins: 0, currentStreak: 0, maxStreak: 0 };
+        }
+
+        function saveStats() {
+            localStorage.setItem('meddleGameStats', JSON.stringify(stats));
+        }
+
         function initializeGame() {
+            loadStats();
             targetDisease = diseases[Math.floor(Math.random() * diseases.length)];
             guessesLeft = MAX_GUESSES;
             gameOver = false;
@@ -223,7 +245,6 @@
 
         function handleGuess() {
             if (gameOver) return;
-
             const guessName = guessInput.value.trim();
             const guessedDisease = diseases.find(d => d.name.toLowerCase() === guessName.toLowerCase());
 
@@ -245,16 +266,14 @@
                 decadeComparison: targetDisease.decade - guessedDisease.decade
             };
             guessHistory.push(results);
-            
             displayGuessRow(guessedDisease, results);
-            
             guessInput.value = '';
             closeAutocomplete();
 
             if (results.name) {
                 setTimeout(() => endGame(true), 6 * 150);
             } else if (guessesLeft === 0) {
-                 setTimeout(() => endGame(false), 6 * 150);
+                setTimeout(() => endGame(false), 6 * 150);
             }
         }
 
@@ -265,13 +284,12 @@
             properties.forEach((prop, index) => {
                 const td = document.createElement('td');
                 td.className = 'cell-wrapper';
-
                 const cellFlipper = document.createElement('div');
                 cellFlipper.className = 'feedback-cell relative h-16 md:h-14';
 
                 let contentOnBack = guessedDisease[prop];
                  if (prop === 'decade') {
-                    contentOnBack = `${guessedDisease[prop]}s`; // Add 's' to decade
+                    contentOnBack = `${guessedDisease[prop]}s`;
                     if (!results.decade) {
                         contentOnBack += ` <span class="font-bold text-lg ml-1">${results.decadeComparison > 0 ? '▲' : '▼'}</span>`;
                     }
@@ -288,7 +306,6 @@
 
                 cellFlipper.appendChild(frontFace);
                 cellFlipper.appendChild(backFace);
-                
                 td.appendChild(cellFlipper);
                 newRow.appendChild(td);
                 
@@ -299,11 +316,34 @@
             guessesContainer.appendChild(newRow);
         }
 
+        function updateStats(isWin) {
+            stats.played++;
+            if (isWin) {
+                stats.wins++;
+                stats.currentStreak++;
+                if (stats.currentStreak > stats.maxStreak) {
+                    stats.maxStreak = stats.currentStreak;
+                }
+            } else {
+                stats.currentStreak = 0;
+            }
+            saveStats();
+        }
+
+        function displayStats() {
+            statPlayed.textContent = stats.played;
+            statWinPercent.textContent = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
+            statCurrentStreak.textContent = stats.currentStreak;
+            statMaxStreak.textContent = stats.maxStreak;
+        }
+
         function endGame(isWin) {
             gameOver = true;
             guessInput.disabled = true;
             guessButton.disabled = true;
-
+            
+            updateStats(isWin);
+            displayStats();
             displayShareableResult();
 
             if (isWin) {
@@ -317,8 +357,8 @@
             shareGridContainer.innerHTML = '';
             guessHistory.forEach(guess => {
                 const row = document.createElement('div');
-                const properties = ['name', 'specialty', 'causation', 'system', 'acuity', 'decade'];
                 let rowString = '';
+                const properties = ['specialty', 'causation', 'system', 'acuity', 'decade'];
                 properties.forEach(prop => {
                     if (prop === 'decade') {
                         if (guess.decade) rowString += '🟩';
@@ -339,13 +379,13 @@
             modalBody.innerHTML = body;
 
             const playAgainButton = document.getElementById('play-again-button');
-            
             playAgainButton.textContent = isWarning ? "Close" : "Play Again";
             shareButton.style.display = isWarning ? 'none' : 'block';
 
-            // Clone the button to remove old event listeners, then replace it in the DOM
             const newPlayAgainButton = playAgainButton.cloneNode(true);
-            playAgainButton.parentNode.replaceChild(newPlayAgainButton, playAgainButton);
+            if (playAgainButton.parentNode) {
+                playAgainButton.parentNode.replaceChild(newPlayAgainButton, playAgainButton);
+            }
 
             if (isWarning) {
                 newPlayAgainButton.addEventListener('click', hideModal, { once: true });
@@ -364,26 +404,34 @@
         
         function copyResultsToClipboard() {
             const guessCount = guessHistory.length;
-            const didWin = guessHistory[guessHistory.length - 1].name;
+            const didWin = guessHistory.length > 0 && guessHistory[guessHistory.length - 1].name;
             let shareText = `Meddle (${didWin ? guessCount : 'X'}/${MAX_GUESSES})\n\n`;
             shareText += Array.from(shareGridContainer.children).map(row => row.textContent).join('\n');
             
-            navigator.clipboard.writeText(shareText).then(() => {
+            const textArea = document.createElement("textarea");
+            textArea.value = shareText;
+            textArea.style.position = "fixed";
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
                 const originalText = shareButton.textContent;
                 shareButton.textContent = 'Copied!';
                 setTimeout(() => { shareButton.textContent = originalText; }, 2000);
-            }).catch(err => {
+            } catch (err) {
                 console.error('Failed to copy: ', err);
-            });
+            }
+            document.body.removeChild(textArea);
         }
 
         function handleAutocomplete(e) {
             const value = e.target.value;
             closeAutocomplete();
             if (!value) return;
-
             const filteredDiseases = diseases.filter(d => d.name.toLowerCase().startsWith(value.toLowerCase()));
-            
             filteredDiseases.forEach((disease, i) => {
                 const item = document.createElement('div');
                 item.innerHTML = `<strong>${disease.name.substr(0, value.length)}</strong>${disease.name.substr(value.length)}`;
